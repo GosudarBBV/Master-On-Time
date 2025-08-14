@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-favorites-table
+      author: Bohdan Buhrak
+      changes:
+        - createTable:
+            tableName: favorites
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: target_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: favorites
+            columnNames: user_id, target_id
+            constraintName: uq_user_target
+        - addForeignKeyConstraint:
+            constraintName: fk_favorites_user
+            baseTableName: favorites
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            constraintName: fk_favorites_target
+            baseTableName: favorites
+            baseColumnNames: target_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE

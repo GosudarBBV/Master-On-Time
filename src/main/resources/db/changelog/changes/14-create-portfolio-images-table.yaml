@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-portfolio-images-table
+      author: Bohdan Buhrak
+      changes:
+        - createTable:
+            tableName: portfolio_images
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: image_url
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_portfolio_images_user
+            baseTableName: portfolio_images
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE

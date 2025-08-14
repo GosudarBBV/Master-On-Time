@@ -1,0 +1,37 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-follow-up-notifications-table
+      author: Bohdan Buhrak
+      changes:
+        - createTable:
+            tableName: follow_up_notifications
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: booking_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: sent
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sent_at
+                  type: datetime
+        - addForeignKeyConstraint:
+            constraintName: fk_follow_up_notifications_booking
+            baseTableName: follow_up_notifications
+            baseColumnNames: booking_id
+            referencedTableName: bookings
+            referencedColumnNames: id
+            onDelete: CASCADE

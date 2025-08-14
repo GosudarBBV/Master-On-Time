@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-platform-settings-table
+      author: Bohdan Buhrak
+      changes:
+        - createTable:
+            tableName: platform_settings
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: key_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: setting_value
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: value_type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false

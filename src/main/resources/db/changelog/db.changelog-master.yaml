@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/01-create-users-table.yaml
+  - include:
+      file: db/changelog/changes/02-create-roles-table.yaml
+  - include:
+      file: db/changelog/changes/03-create-users-roles-table.yaml
+  - include:
+      file: db/changelog/changes/04-create-categories-table.yaml
+  - include:
+      file: db/changelog/changes/05-create-category-items-table.yaml
+  - include:
+      file: db/changelog/changes/06-create-bookings-table.yaml
+  - include:
+      file: db/changelog/changes/07-create-tags-table.yaml
+  - include:
+      file: db/changelog/changes/08-create-bookings-tags-table.yaml
+  - include:
+      file: db/changelog/changes/09-create-favourites-table.yaml
+  - include:
+      file: db/changelog/changes/10-create-reviews-table.yaml
+  - include:
+      file: db/changelog/changes/11-create-notifications-table.yaml
+  - include:
+      file: db/changelog/changes/12-create-follow-up-notifications-table.yaml
+  - include:
+      file: db/changelog/changes/13-create-notification-preferences-table.yaml
+  - include:
+      file: db/changelog/changes/14-create-portfolio-images-table.yaml
+  - include:
+      file: db/changelog/changes/15-create-platform-settings-table.yaml
+  - include:
+      file: db/changelog/changes/16-create-password-reset-tokens-table.yaml
+  - include:
+      file: db/changelog/changes/17-create-specialists-table.yaml
+  - include:
+      file: db/changelog/changes/18-create-activity-logs-table.yaml
+  - include:
+      file: db/changelog/changes/19-create-availabilities-table.yaml
+  - include:
+      file: db/changelog/changes/20-create-unavailabilities-table.yaml
+
+

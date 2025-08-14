@@ -1,0 +1,69 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-reviews-table
+      author: Bohdan Buhrak
+      changes:
+        - createTable:
+            tableName: reviews
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: specialist_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: client_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rating
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comment
+                  type: varchar(2000)
+              - column:
+                  name: created_at
+                  type: datetime
+                  constraints:
+                    nullable: false
+              - column:
+                  name: booking_id
+                  type: bigint
+                  constraints:
+                    unique: true
+              - column:
+                  name: status
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_reviews_specialist
+            baseTableName: reviews
+            baseColumnNames: specialist_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            constraintName: fk_reviews_client
+            baseTableName: reviews
+            baseColumnNames: client_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            constraintName: fk_reviews_booking
+            baseTableName: reviews
+            baseColumnNames: booking_id
+            referencedTableName: bookings
+            referencedColumnNames: id
+            onDelete: CASCADE

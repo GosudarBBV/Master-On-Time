@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-bookings-tags-table
+      author: Bohdan Buhrak
+      changes:
+        - createTable:
+            tableName: bookings_tags
+            columns:
+              - column:
+                  name: booking_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: tags_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: bookings_tags
+            columnNames: booking_id, tags_id
+            constraintName: pk_bookings_tags
+        - addForeignKeyConstraint:
+            constraintName: fk_bookings_tags_booking
+            baseTableName: bookings_tags
+            baseColumnNames: booking_id
+            referencedTableName: bookings
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            constraintName: fk_bookings_tags_tag
+            baseTableName: bookings_tags
+            baseColumnNames: tags_id
+            referencedTableName: tags
+            referencedColumnNames: id
+            onDelete: CASCADE
