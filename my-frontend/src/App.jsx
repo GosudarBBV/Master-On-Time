@@ -8,7 +8,7 @@ function App() {
   const [message, setMessage] = useState("Press button to see message");
 
   const fetchMessage = () => {
-    fetch(`${API_BASE_URL}/random-message`) // <-- без /api
+    fetch(`${API_BASE_URL}/random-message`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
