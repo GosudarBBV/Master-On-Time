@@ -8,12 +8,14 @@ import com.master.on.time.master.on.time.exception.InvalidBookingOperationExcept
 import com.master.on.time.master.on.time.mapper.BookingMapper;
 import com.master.on.time.master.on.time.model.Booking;
 import com.master.on.time.master.on.time.model.CategoryItem;
+import com.master.on.time.master.on.time.model.SpecialistProfile;
 import com.master.on.time.master.on.time.model.User;
 import com.master.on.time.master.on.time.repository.BookingRepository;
 import com.master.on.time.master.on.time.repository.CategoryItemRepository;
 import com.master.on.time.master.on.time.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class BookingServiceImpl implements BookingService {
+
     private static final String STATUS_CONFIRMED = "CONFIRMED";
     private static final String STATUS_CANCELLED = "CANCELLED";
     private static final String STATUS_BLOCKED = "BLOCKED";
@@ -39,30 +42,39 @@ public class BookingServiceImpl implements BookingService {
     private final GoogleCalendarService googleCalendarService;
 
     @Override
-    public List<LocalDateTime> getAvailableTimeSlots(Long specialistId,
+    public List<LocalDateTime> getAvailableTimeSlots(Long specialistUserId,
                                                      Long serviceItemId, LocalDate date) {
+
         CategoryItem service = categoryItemRepository.findById(serviceItemId)
                 .orElseThrow(() -> new EntityNotFoundException("Service not found"));
 
-        User specialist = userRepository.findById(specialistId)
+        User specialistUser = userRepository.findById(specialistUserId)
                 .orElseThrow(() -> new EntityNotFoundException("Specialist not found"));
+
+        SpecialistProfile specialist = specialistUser.getSpecialistProfile();
+        if (specialist == null) {
+            throw new EntityNotFoundException("Specialist profile not found for this user");
+        }
 
         int durationMinutes = service.getDurationMinutes();
         LocalDateTime startOfDay = date.atTime(9, 0);
         LocalDateTime endOfDay = date.atTime(18, 0);
 
-        List<LocalDateTime> availableSlots = new java.util.ArrayList<>();
-
+        List<LocalDateTime> availableSlots = new ArrayList<>();
         for (LocalDateTime slotStart = startOfDay;
                 !slotStart.plusMinutes(durationMinutes).isAfter(endOfDay);
                 slotStart = slotStart.plusMinutes(15)) {
 
             LocalDateTime slotEnd = slotStart.plusMinutes(durationMinutes);
             List<Booking> conflicts = bookingRepository
-                    .findConflictingBookings(specialistId, slotStart, slotEnd);
+                    .findConflictingBookingsBySpecialistProfileId(specialist.getId(),
+                            slotStart, slotEnd);
 
-            if (conflicts.stream().noneMatch(b -> !b.getStatus().equals(STATUS_CANCELLED))
-                    && slotStart.isAfter(LocalDateTime.now())) {
+            boolean hasActiveConflict = conflicts.stream()
+                    .anyMatch(b -> !b.getStatus().equals(STATUS_CANCELLED)
+                            && !b.getStatus().equals(STATUS_BLOCKED));
+
+            if (!hasActiveConflict && slotStart.isAfter(LocalDateTime.now())) {
                 availableSlots.add(slotStart);
             }
         }
@@ -72,31 +84,34 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponseDto bookTimeSlot(Long clientId, BookingRequestDto requestDto) {
-        User client = userRepository.findById(clientId)
+        final User client = userRepository.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-
-        User specialist = userRepository.findById(requestDto.specialistId())
+        final User specialistUser = userRepository.findById(requestDto.specialistId())
                 .orElseThrow(() -> new EntityNotFoundException("Specialist not found"));
+        SpecialistProfile specialist = specialistUser.getSpecialistProfile();
+
+        if (specialist == null) {
+            throw new EntityNotFoundException("Specialist profile not found for this user");
+        }
 
         CategoryItem service = categoryItemRepository.findById(requestDto.serviceItemId())
                 .orElseThrow(() -> new EntityNotFoundException("Service not found"));
-
-        int duration = service.getDurationMinutes();
         LocalDateTime start = requestDto.startTime();
-        LocalDateTime end = start.plusMinutes(duration);
+        LocalDateTime end = start.plusMinutes(service.getDurationMinutes());
 
         if (start.isBefore(LocalDateTime.now())) {
             throw new InvalidBookingOperationException("Cannot book a time in the past");
         }
 
-        List<Booking> conflicts = bookingRepository
-                .findConflictingBookings(specialist.getId(), start, end);
-        boolean hasActiveConflict = conflicts.stream()
+        boolean hasConflict = bookingRepository
+                .findConflictingBookingsBySpecialistProfileId(specialist.getId(),
+                        start, end)
+                .stream()
                 .anyMatch(b -> !b.getStatus().equals(STATUS_CANCELLED)
                         && !b.getStatus().equals(STATUS_BLOCKED));
-        if (hasActiveConflict) {
-            throw new InvalidBookingOperationException("Selected time"
-                    + " slot is no longer available. Please choose another time.");
+
+        if (hasConflict) {
+            throw new InvalidBookingOperationException("Selected time slot is not available");
         }
 
         Booking booking = new Booking();
@@ -106,24 +121,24 @@ public class BookingServiceImpl implements BookingService {
         booking.setStartTime(start);
         booking.setEndTime(end);
         booking.setStatus(STATUS_CONFIRMED);
+        booking.setPriceAtBooking(specialist.getPrice());
 
         Booking savedBooking = bookingRepository.save(booking);
         BookingResponseDto dto = bookingMapper.toDto(savedBooking);
 
         emailService.sendBookingConfirmationEmail(client.getEmail(), dto);
-        notificationService.createBookingNotification(specialist.getId(), dto);
+        notificationService.createBookingNotification(specialistUser.getId(), dto);
 
         return dto;
     }
 
     @Override
-    public void cancelBooking(Long clientId, Long bookingId) {
+    public void cancelBooking(Long userId, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(()
-                        -> new EntityNotFoundException("Booking not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
-        if (!booking.getClient().getId().equals(clientId)
-                && !booking.getSpecialist().getId().equals(clientId)) {
+        if (!booking.getClient().getId().equals(userId)
+                && !booking.getSpecialist().getUser().getId().equals(userId)) {
             throw new AccessDeniedException("You can only cancel your own bookings");
         }
 
@@ -135,24 +150,22 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.save(booking);
 
         BookingResponseDto dto = bookingMapper.toDto(booking);
-        notificationService.createCancellationNotification(dto.id(),dto);
+        notificationService.createCancellationNotification(dto.id(), dto);
         emailService.sendBookingCancellationEmail(booking.getClient().getEmail(), dto);
     }
 
     @Override
-    public void proposeReschedule(Long specialistId,
-                                  BookingRescheduleRequestDto dto) {
+    public void proposeReschedule(Long specialistProfileId, BookingRescheduleRequestDto dto) {
         Booking booking = bookingRepository.findById(dto.bookingId())
-                .orElseThrow(()
-                        -> new EntityNotFoundException("Booking not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
-        if (!booking.getSpecialist().getId().equals(specialistId)) {
+        if (!booking.getSpecialist().getId().equals(specialistProfileId)) {
             throw new AccessDeniedException("Only specialist can propose reschedule");
         }
 
-        if (!booking.getStatus().equals(STATUS_CONFIRMED)) {
-            throw new InvalidBookingOperationException("Only confirmed"
-                    + " bookings can be rescheduled");
+        if (!STATUS_CONFIRMED.equals(booking.getStatus())) {
+            throw new InvalidBookingOperationException("Only confirmed "
+                    + "bookings can be rescheduled");
         }
 
         LocalDateTime newStart = dto.proposedStartTime();
@@ -162,15 +175,14 @@ public class BookingServiceImpl implements BookingService {
             throw new InvalidBookingOperationException("Cannot reschedule to past time");
         }
 
-        List<Booking> conflicts = bookingRepository
-                .findConflictingBookings(specialistId, newStart, newEnd);
-        boolean hasConflict = conflicts.stream()
-                .anyMatch(b -> !b.getId().equals(booking.getId())
+        boolean hasConflict = bookingRepository.findConflictingBookings(specialistProfileId,
+                        newStart, newEnd)
+                .stream().anyMatch(b -> !b.getId().equals(booking.getId())
                         && !b.getStatus().equals(STATUS_CANCELLED));
 
         if (hasConflict) {
-            throw new InvalidBookingOperationException("New time slot "
-                    + "conflicts with existing bookings");
+            throw new InvalidBookingOperationException("New time "
+                    + "slot conflicts with existing bookings");
         }
 
         booking.setStatus(STATUS_RESCHEDULE_REQUESTED);
@@ -180,8 +192,9 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.save(booking);
 
         BookingResponseDto dtoResponse = bookingMapper.toDto(booking);
-        notificationService.createRescheduleProposalNotification(booking.getClient().getId(),
-                dtoResponse);
+        notificationService
+                .createRescheduleProposalNotification(booking.getClient().getId(),
+                        dtoResponse);
         emailService.sendRescheduleProposalEmail(booking.getClient().getEmail(),
                 dtoResponse);
     }
@@ -192,10 +205,11 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
         if (!booking.getClient().getId().equals(clientId)) {
-            throw new AccessDeniedException("Only client can respond to reschedule request");
+            throw new AccessDeniedException("Only client can "
+                    + "respond to reschedule request");
         }
 
-        if (!booking.getStatus().equals(STATUS_RESCHEDULE_REQUESTED)) {
+        if (!STATUS_RESCHEDULE_REQUESTED.equals(booking.getStatus())) {
             throw new InvalidBookingOperationException("No reschedule request pending");
         }
 
@@ -203,47 +217,51 @@ public class BookingServiceImpl implements BookingService {
             booking.setStartTime(booking.getProposedStartTime());
             booking.setEndTime(booking.getProposedEndTime());
             booking.setStatus(STATUS_CONFIRMED);
-            booking.setProposedStartTime(null);
-            booking.setProposedEndTime(null);
-            booking.setRescheduleMessage(null);
+        }
 
-            bookingRepository.save(booking);
+        booking.setProposedStartTime(null);
+        booking.setProposedEndTime(null);
+        booking.setRescheduleMessage(null);
+        bookingRepository.save(booking);
 
-            BookingResponseDto dto = bookingMapper.toDto(booking);
-            notificationService
-                    .createRescheduleAcceptedNotification(booking.getSpecialist().getId(), dto);
-            emailService.sendRescheduleAcceptedEmail(booking.getSpecialist().getEmail(), dto);
+        BookingResponseDto dto = bookingMapper.toDto(booking);
+        if (accept) {
+            notificationService.createRescheduleAcceptedNotification(booking
+                            .getSpecialist().getUser().getId(),
+                    dto);
+            emailService.sendRescheduleAcceptedEmail(booking
+                            .getSpecialist().getUser().getEmail(),
+                    dto);
         } else {
-            booking.setStatus(STATUS_CONFIRMED);
-            booking.setProposedStartTime(null);
-            booking.setProposedEndTime(null);
-            booking.setRescheduleMessage(null);
-
-            bookingRepository.save(booking);
-
-            BookingResponseDto dto = bookingMapper.toDto(booking);
-            notificationService
-                    .createRescheduleDeclinedNotification(booking.getSpecialist().getId(), dto);
-            emailService
-                    .sendRescheduleDeclinedEmail(booking.getSpecialist().getEmail(), dto);
+            notificationService.createRescheduleDeclinedNotification(booking
+                            .getSpecialist().getUser().getId(),
+                    dto);
+            emailService.sendRescheduleDeclinedEmail(booking
+                            .getSpecialist().getUser().getEmail(),
+                    dto);
         }
     }
 
     @Override
-    public BookingResponseDto blockTimeSlot(Long specialistId, LocalDateTime startTime,
+    public BookingResponseDto blockTimeSlot(Long specialistUserId, LocalDateTime startTime,
                                             LocalDateTime endTime, String reason) {
-        User specialist = userRepository.findById(specialistId)
-                .orElseThrow(()
-                        -> new EntityNotFoundException("Specialist not found"));
+        // Отримуємо користувача
+        User specialistUser = userRepository.findById(specialistUserId)
+                .orElseThrow(() -> new EntityNotFoundException("Specialist not found"));
+
+        // Беремо профіль спеціаліста
+        SpecialistProfile specialist = specialistUser.getSpecialistProfile();
+        if (specialist == null) {
+            throw new EntityNotFoundException("Specialist profile not found");
+        }
 
         if (startTime.isBefore(LocalDateTime.now())) {
             throw new InvalidBookingOperationException("Cannot block past time slots");
         }
 
-        List<Booking> conflicts = bookingRepository
-                .findConflictingBookings(specialistId, startTime, endTime);
-        boolean hasConflict = conflicts.stream()
-                .anyMatch(b -> !b.getStatus().equals(STATUS_CANCELLED)
+        boolean hasConflict = bookingRepository.findConflictingBookings(specialist
+                        .getId(), startTime, endTime)
+                .stream().anyMatch(b -> !b.getStatus().equals(STATUS_CANCELLED)
                         && !b.getStatus().equals(STATUS_BLOCKED));
 
         if (hasConflict) {
@@ -257,21 +275,22 @@ public class BookingServiceImpl implements BookingService {
         block.setEndTime(endTime);
         block.setStatus(STATUS_BLOCKED);
         block.setReason(reason);
+        block.setPriceAtBooking(specialist.getPrice());
 
         Booking savedBlock = bookingRepository.save(block);
         return bookingMapper.toDto(savedBlock);
     }
 
     @Override
-    public void unblockTimeSlot(Long bookingId, Long specialistId) {
+    public void unblockTimeSlot(Long bookingId, Long specialistProfileId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
-        if (!booking.getSpecialist().getId().equals(specialistId)) {
+        if (!booking.getSpecialist().getId().equals(specialistProfileId)) {
             throw new AccessDeniedException("Only specialist can unblock own blocked slots");
         }
 
-        if (!booking.getStatus().equals(STATUS_BLOCKED)) {
+        if (!STATUS_BLOCKED.equals(booking.getStatus())) {
             throw new InvalidBookingOperationException("Booking is not a blocked slot");
         }
 
@@ -282,25 +301,20 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingResponseDto> getConfirmedBookingsForUser(Long userId) {
         List<Booking> bookings = bookingRepository.findByClientIdAndStatus(userId,
                 STATUS_CONFIRMED);
-        return bookings.stream()
-                .map(bookingMapper::toDto)
-                .collect(Collectors.toList());
+        return bookings.stream().map(bookingMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
     public void syncUserBookingsWithGoogleCalendar(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        userRepository.findById(userId).orElseThrow(()
+                -> new EntityNotFoundException("User not found"));
         googleCalendarService.syncBookingsWithGoogleCalendar(userId);
     }
 
     @Override
     public List<BookingResponseDto> getUpcomingAppointments(Long userId) {
-        List<Booking> upcoming = bookingRepository
-                .findUpcomingAppointments(userId);
-        return upcoming.stream()
-                .map(bookingMapper::toDto)
-                .collect(Collectors.toList());
+        List<Booking> upcoming = bookingRepository.findUpcomingAppointments(userId);
+        return upcoming.stream().map(bookingMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
@@ -309,19 +323,15 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponseDto> getBookingsForSpecialistIdOnDate(Long specialistId,
+    public List<BookingResponseDto> getBookingsForSpecialistIdOnDate(Long specialistProfileId,
                                                                      LocalDate date) {
         LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.plusDays(1)
-                .atStartOfDay().minusSeconds(1);
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay().minusSeconds(1);
 
-        List<Booking> bookings = bookingRepository
-                .findBySpecialistIdAndStartTimeBetweenAndStatus(specialistId,
-                        startOfDay, endOfDay, STATUS_CONFIRMED);
+        List<Booking> bookings = bookingRepository.findBySpecialistIdAndStartTimeBetweenAndStatus(
+                specialistProfileId, startOfDay, endOfDay, STATUS_CONFIRMED);
 
-        return bookings.stream()
-                .map(bookingMapper::toDto)
-                .collect(Collectors.toList());
+        return bookings.stream().map(bookingMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
@@ -330,7 +340,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
         if (!booking.getClient().getId().equals(userId)
-                && !booking.getSpecialist().getId().equals(userId)) {
+                && !booking.getSpecialist().getUser().getId().equals(userId)) {
             throw new AccessDeniedException("You do not have access to this booking");
         }
 

@@ -2,6 +2,7 @@ package com.master.on.time.master.on.time.service;
 
 import com.master.on.time.master.on.time.exception.EntityNotFoundException;
 import com.master.on.time.master.on.time.model.Booking;
+import com.master.on.time.master.on.time.model.SpecialistProfile;
 import com.master.on.time.master.on.time.model.User;
 import com.master.on.time.master.on.time.repository.BookingRepository;
 import com.master.on.time.master.on.time.repository.UserRepository;
@@ -97,28 +98,31 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
 
     @Override
     public void syncBookingsWithGoogleCalendar(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(()
-                -> new EntityNotFoundException("User not found with id: " + userId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(()
+                        -> new EntityNotFoundException("User not found with id: " + userId));
 
         if (!user.isCalendarSyncEnabled()) {
-            throw new IllegalStateException("Calendar sync is not enabled for user with id "
-                    + userId);
+            throw new IllegalStateException("Calendar sync "
+                    + "is not enabled for user with id " + userId);
         }
 
         String accessToken = user.getGoogleCalendarAccessToken();
 
-        List<Booking> bookings
-                = bookingRepository.findByClientIdAndStatus(userId, "CONFIRMED");
+        List<Booking> bookings = bookingRepository
+                .findByClientIdAndStatus(userId, "CONFIRMED");
 
         RestTemplate restTemplate = new RestTemplate();
 
         for (Booking booking : bookings) {
+            SpecialistProfile specialistProfile = booking.getSpecialist();
+            User specialistUser = specialistProfile.getUser();
+
             Map<String, Object> event = new HashMap<>();
             event.put("summary", "Booking with "
-                    + booking.getSpecialist().getFirstName() + " "
-                    + booking.getSpecialist().getLastName());
-            event.put("description", "Service: "
-                    + booking.getServiceItem().getName());
+                    + specialistUser.getFirstName() + " "
+                    + specialistUser.getLastName());
+            event.put("description", "Service: " + booking.getServiceItem().getName());
 
             Map<String, String> start = new HashMap<>();
             start.put("dateTime", booking.getStartTime().toString());

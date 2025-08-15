@@ -43,7 +43,7 @@ databaseChangeLog:
                     unique: true
               - column:
                   name: status
-                  type: varchar(50)
+                  type: varchar(20)
                   constraints:
                     nullable: false
         - addForeignKeyConstraint:

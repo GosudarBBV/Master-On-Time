@@ -39,5 +39,7 @@ databaseChangeLog:
       file: db/changelog/changes/19-create-availabilities-table.yaml
   - include:
       file: db/changelog/changes/20-create-unavailabilities-table.yaml
-
-
+  - include:
+      file: db/changelog/changes/21-create-payment-cards.yaml
+  - include:
+      file: db/changelog/changes/22-create-specialist-profiles-table.yaml

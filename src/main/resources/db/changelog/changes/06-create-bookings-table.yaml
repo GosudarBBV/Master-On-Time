@@ -60,12 +60,19 @@ databaseChangeLog:
               - column:
                   name: reason
                   type: varchar(255)
+              - column:
+                  name: price_at_booking
+                  type: decimal(10,2)
+                  constraints:
+                    nullable: false
+
         - addForeignKeyConstraint:
             constraintName: fk_bookings_client
             baseTableName: bookings
             baseColumnNames: client_id
             referencedTableName: users
             referencedColumnNames: id
+
         - addForeignKeyConstraint:
             constraintName: fk_bookings_specialist
             baseTableName: bookings
@@ -73,15 +80,18 @@ databaseChangeLog:
             referencedTableName: users
             referencedColumnNames: id
             onDelete: CASCADE
+
         - addForeignKeyConstraint:
             constraintName: fk_bookings_service_item
             baseTableName: bookings
             baseColumnNames: service_item_id
             referencedTableName: category_items
             referencedColumnNames: id
+
         - addForeignKeyConstraint:
             constraintName: fk_bookings_category
             baseTableName: bookings
             baseColumnNames: category_id
             referencedTableName: categories
             referencedColumnNames: id
+

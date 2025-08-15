@@ -18,19 +18,14 @@ public record UserResponseDto(
         @Schema(description = "User's last name", example = "Doe")
         String lastName,
 
-        @Schema(description = "User's address", example = "123 Main St")
-        String address,
-
-        @Schema(description = "User's country", example = "USA")
-        String country,
-
-        @Schema(description = "User's city", example = "New York")
-        String city,
+        @Schema(description = "User address")
+        AddressDto address,
 
         @Schema(description = "User's phone number", example = "+1234567890")
         String phoneNumber,
 
-        @Schema(description = "URL to user's profile image", example = "http://example.com/image.jpg")
+        @Schema(description = "URL to user's profile image",
+                example = "http://example.com/image.jpg")
         String profileImageUrl
 ) {
 }

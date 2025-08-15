@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-specialist-profiles-table
+      author: Bohdan Buhrak
+      changes:
+        - createTable:
+            tableName: specialist_profiles
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: profession
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: decimal(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: about
+                  type: varchar(2000)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: street
+                  type: varchar(255)
+              - column:
+                  name: city
+                  type: varchar(100)
+              - column:
+                  name: zip
+                  type: varchar(20)
+              - column:
+                  name: country
+                  type: varchar(100)
+        - addForeignKeyConstraint:
+            constraintName: fk_specialist_profiles_user
+            baseTableName: specialist_profiles
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE

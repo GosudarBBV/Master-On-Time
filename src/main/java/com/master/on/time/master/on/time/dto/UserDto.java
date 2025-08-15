@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 @Schema(description = "Basic user data transfer object")
 public record UserDto(
-
         @NotNull
         @Schema(description = "User ID", example = "123")
         Long id,
@@ -31,8 +30,12 @@ public record UserDto(
         String status,
 
         @NotNull
-        @Schema(description = "Registration date", example = "2025-08-10T10:00:00")
-        LocalDateTime registrationDate
+        @Schema(description = "Registration date",
+                example = "2025-08-10T10:00:00")
+        LocalDateTime registrationDate,
 
+        @NotNull
+        @Schema(description = "User address")
+        AddressDto address
 ) {
 }

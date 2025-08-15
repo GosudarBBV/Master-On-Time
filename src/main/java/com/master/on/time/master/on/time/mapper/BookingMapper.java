@@ -11,13 +11,12 @@ public interface BookingMapper {
         return new BookingResponseDto(
                 booking.getId(),
                 booking.getClient().getId(),
-                booking.getServiceItem().getId(),
+                booking.getServiceItem() != null ? booking.getServiceItem().getId() : null,
                 booking.getSpecialist().getId(),
-                booking.getSpecialist()
-                        .getFirstName() + " " + booking
-                        .getSpecialist().getLastName(),
-                booking.getServiceItem().getName(),
-                booking.getServiceItem().getPrice().toString(),
+                booking.getSpecialist().getUser().getFirstName() + " "
+                        + booking.getSpecialist().getUser().getLastName(),
+                booking.getServiceItem() != null ? booking.getServiceItem().getName() : null,
+                booking.getPriceAtBooking().toString(),
                 booking.getStartTime(),
                 booking.getEndTime(),
                 null,
@@ -28,19 +27,19 @@ public interface BookingMapper {
     default BookingResponseDto toBookingResponseDto(Booking booking, boolean isUser) {
         Long clientId = isUser ? booking.getSpecialist().getId() : booking.getClient().getId();
         String specialistName = isUser
-                ? booking.getSpecialist().getFirstName() + " "
-                + booking.getSpecialist().getLastName()
+                ? booking.getSpecialist().getUser().getFirstName() + " "
+                + booking.getSpecialist().getUser().getLastName()
                 : booking.getClient().getFirstName() + " "
                 + booking.getClient().getLastName();
 
         return new BookingResponseDto(
                 booking.getId(),
                 clientId,
-                booking.getServiceItem().getId(),
+                booking.getServiceItem() != null ? booking.getServiceItem().getId() : null,
                 booking.getSpecialist().getId(),
                 specialistName,
-                booking.getServiceItem().getName(),
-                booking.getServiceItem().getPrice().toString(),
+                booking.getServiceItem() != null ? booking.getServiceItem().getName() : null,
+                booking.getPriceAtBooking().toString(),
                 booking.getStartTime(),
                 booking.getEndTime(),
                 null,

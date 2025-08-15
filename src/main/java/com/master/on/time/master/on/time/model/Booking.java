@@ -11,6 +11,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 import lombok.Getter;
@@ -31,7 +32,7 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "specialist_id", nullable = false)
-    private User specialist;
+    private SpecialistProfile specialist;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_item_id")
@@ -68,4 +69,7 @@ public class Booking {
 
     @Column(name = "reason")
     private String reason;
+
+    @Column(nullable = false)
+    private BigDecimal priceAtBooking;
 }

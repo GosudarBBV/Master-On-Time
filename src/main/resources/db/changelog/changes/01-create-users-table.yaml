@@ -35,14 +35,17 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: country
+                  name: street
                   type: varchar(255)
               - column:
                   name: city
-                  type: varchar(255)
+                  type: varchar(100)
               - column:
-                  name: address
-                  type: varchar(500)
+                  name: zip
+                  type: varchar(20)
+              - column:
+                  name: country
+                  type: varchar(100)
               - column:
                   name: phone_number
                   type: varchar(50)

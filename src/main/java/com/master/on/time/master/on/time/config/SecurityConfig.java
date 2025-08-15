@@ -1,8 +1,8 @@
 package com.master.on.time.master.on.time.config;
 
 import com.master.on.time.master.on.time.security.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

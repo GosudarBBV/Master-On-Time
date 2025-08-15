@@ -8,6 +8,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+    @Query("SELECT b FROM Booking b "
+            + "WHERE b.specialist.id = :specialistId "
+            + "AND b.status IN ('CONFIRMED', 'BLOCKED') "
+            + "AND ((b.startTime < :endTime) AND (b.endTime > :startTime))")
+    List<Booking> findConflictingBookingsBySpecialistProfileId(
+            @Param("specialistId") Long specialistId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime
+    );
+
     @Query("select b from Booking b where b.specialist.id = :specialistId "
             + "and b.status IN ('CONFIRMED', 'BLOCKED') "
             + "and ((b.startTime < :endTime) and (b.endTime > :startTime))")

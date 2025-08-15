@@ -3,6 +3,7 @@ package com.master.on.time.master.on.time.service;
 import com.master.on.time.master.on.time.dto.BookingResponseDto;
 import com.master.on.time.master.on.time.mapper.BookingMapper;
 import com.master.on.time.master.on.time.model.Booking;
+import com.master.on.time.master.on.time.model.SpecialistProfile;
 import com.master.on.time.master.on.time.model.User;
 import com.master.on.time.master.on.time.repository.BookingRepository;
 import java.time.LocalDate;
@@ -71,15 +72,17 @@ public class ReminderServiceImpl implements ReminderService {
             return;
         }
 
-        Map<User, List<BookingResponseDto>> bookingsBySpecialist = bookings.stream()
+        Map<SpecialistProfile, List<BookingResponseDto>> bookingsBySpecialist = bookings.stream()
                 .collect(Collectors.groupingBy(
                         Booking::getSpecialist,
                         Collectors.mapping(bookingMapper::toDto, Collectors.toList())
                 ));
 
-        bookingsBySpecialist.forEach((specialist, bookingDtos) -> {
-            emailService.sendDailyBookingSummaryEmail(specialist.getEmail(), bookingDtos, today);
-            notificationService.createDailyBookingSummaryNotification(specialist.getId(),
+        bookingsBySpecialist.forEach((specialistProfile, bookingDtos) -> {
+            User specialistUser = specialistProfile.getUser();
+            emailService.sendDailyBookingSummaryEmail(specialistUser.getEmail(),
+                    bookingDtos, today);
+            notificationService.createDailyBookingSummaryNotification(specialistUser.getId(),
                     bookingDtos, today);
         });
 

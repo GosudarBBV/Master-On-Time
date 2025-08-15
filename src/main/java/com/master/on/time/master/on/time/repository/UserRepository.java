@@ -23,7 +23,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
                   and u.visible = true
                   and (:serviceName is null or lower(ci.name)
                   like lower(concat('%', :serviceName, '%')))
-                  and (:location is null or lower(u.city) like lower(concat('%', :location, '%')))
+                  and (:location is null or lower(u.address.city)
+                  like lower(concat('%', :location, '%')))
             """)
     List<User> findProvidersByServiceAndLocation(
             @Param("roleName") RoleName roleName,

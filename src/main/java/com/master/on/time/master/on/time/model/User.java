@@ -1,13 +1,17 @@
 package com.master.on.time.master.on.time.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.HashSet;
@@ -24,7 +28,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Entity
 @Table(name = "users")
 @SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id=?")
-@FilterDef(name = "deletedUserFilter", parameters = @ParamDef(name = "isDeleted",
+@FilterDef(name = "deletedUserFilter",
+        parameters = @ParamDef(name = "isDeleted",
         type = Boolean.class))
 @Filter(name = "deletedUserFilter",
         condition = "is_deleted = :isDeleted")
@@ -47,11 +52,12 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String lastName;
 
-    private String country;
+    @Embedded
+    private Address address;
 
-    private String city;
-
-    private String address;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY)
+    private SpecialistProfile specialistProfile;
 
     private String phoneNumber;
 
