@@ -1,7 +1,8 @@
 # Builder stage
 FROM openjdk:17-jdk-alpine as builder
 WORKDIR application
-COPY master.on.time-0.0.1-SNAPSHOT.jar application.jar
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
 # Final stage
