@@ -1,9 +1,7 @@
 HELP.md
-# Ігноруємо все у target, крім JAR
 target/
 !target/*.jar
-
-# Для підпроєктів Maven/Gradle
+.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 .env
