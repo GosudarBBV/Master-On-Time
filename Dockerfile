@@ -14,7 +14,7 @@ FROM openjdk:17-jdk-alpine
 WORKDIR /application
 
 # Копіюємо зібраний JAR
-COPY --from=builder /application/target/*.jar application.jar
+COPY target/*.jar application.jar.
 
 ENTRYPOINT ["java", "-jar", "application.jar"]
 EXPOSE 8080
