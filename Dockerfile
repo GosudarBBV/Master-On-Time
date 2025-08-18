@@ -6,18 +6,15 @@ WORKDIR /application
 COPY pom.xml .
 COPY src ./src
 
-# Збираємо JAR з Spring Boot layers
-RUN mvn clean package spring-boot:build-image -DskipTests
+# Збираємо JAR з тестами пропущеними
+RUN mvn clean package -DskipTests
 
 # Stage 2: Run the application
 FROM openjdk:17-jdk-alpine
 WORKDIR /application
 
-# Копіюємо зібрані шари Spring Boot
-COPY --from=builder /application/target/dependency/ ./dependencies/
-COPY --from=builder /application/target/spring-boot-loader/ ./spring-boot-loader/
-COPY --from=builder /application/target/snapshot-dependencies/ ./snapshot-dependencies/
-COPY --from=builder /application/target/application/ ./application/
+# Копіюємо зібраний JAR
+COPY --from=builder /application/target/*.jar application.jar
 
-ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["java", "-jar", "application.jar"]
 EXPOSE 8080
