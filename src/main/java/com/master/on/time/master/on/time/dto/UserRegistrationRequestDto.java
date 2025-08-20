@@ -1,5 +1,6 @@
 package com.master.on.time.master.on.time.dto;
 
+import com.master.on.time.master.on.time.model.RoleName;
 import com.master.on.time.master.on.time.validation.FieldMatch;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -40,7 +41,10 @@ public record UserRegistrationRequestDto(
 
         @Schema(description = "URL of the user's profile image",
                 example = "http://example.com/image.jpg")
-        String profileImageUrl
+        String profileImageUrl,
 
+        @NotNull
+        @Schema(description = "Role of the user", example = "USER")
+        RoleName role
 ) {
 }
