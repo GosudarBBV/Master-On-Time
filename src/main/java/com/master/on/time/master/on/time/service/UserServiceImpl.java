@@ -59,7 +59,9 @@ public class UserServiceImpl implements UserService {
     public Long getAuthenticatedUserId() {
         Authentication authentication = SecurityContextHolder
                 .getContext().getAuthentication();
-        User user = (User) authentication.getPrincipal();
+        String email = authentication.getName();
+        User user = userRepository.findByEmailWithRoles(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return user.getId();
     }
 

@@ -50,6 +50,7 @@ public class SecurityConfig {
                                         "/v3/api-docs/**",
                                         "/api/random-message"
                                 ).permitAll()
+                                .anyRequest().authenticated()
                 ).sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter,

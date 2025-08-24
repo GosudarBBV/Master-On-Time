@@ -61,6 +61,8 @@ public class User implements UserDetails {
 
     private String phoneNumber;
 
+    private String profileImageUrl;
+
     @Column(nullable = false)
     private boolean visible = true;
 

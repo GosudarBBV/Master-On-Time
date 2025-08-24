@@ -1,6 +1,7 @@
 package com.master.on.time.master.on.time.mapper;
 
 import com.master.on.time.master.on.time.config.MapperConfig;
+import com.master.on.time.master.on.time.dto.AddressDto;
 import com.master.on.time.master.on.time.dto.UserDetailsDto;
 import com.master.on.time.master.on.time.dto.UserDto;
 import com.master.on.time.master.on.time.dto.UserRegistrationRequestDto;
@@ -12,7 +13,27 @@ import org.mapstruct.Mapper;
 public interface UserMapper {
     User toModel(UserRegistrationRequestDto user);
 
-    UserResponseDto toResponseDto(User user);
+    default UserResponseDto toResponseDto(User user) {
+        AddressDto addressDto = null;
+        if (user.getAddress() != null) {
+            addressDto = new AddressDto(
+                    user.getAddress().getCountry(),
+                    user.getAddress().getStreet(),
+                    user.getAddress().getCity(),
+                    user.getAddress().getZip()
+            );
+        }
+
+        return new UserResponseDto(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                addressDto,
+                user.getPhoneNumber(),
+                user.getProfileImageUrl()
+        );
+    }
 
     UserDto toUserDto(User user);
 
