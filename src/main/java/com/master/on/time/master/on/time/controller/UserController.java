@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,6 +47,17 @@ public class UserController {
     public UserResponseDto getProfile() {
         Long userId = userService.getAuthenticatedUserId();
         return userService.getUserById(userId);
+    }
+
+    @Operation(summary = "Get all specialists")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "List of specialists returned successfully"),
+            @ApiResponse(responseCode = "404", description = "No specialists found")
+    })
+    @GetMapping("/specialists")
+    public List<UserResponseDto> getAllSpecialists() {
+        return userService.getAllSpecialists();
     }
 
     @DeleteMapping("/{id}")

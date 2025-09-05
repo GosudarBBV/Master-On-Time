@@ -33,6 +33,30 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             @Param("location") String location
     );
 
+    @Query("""
+        select distinct u from User u
+        join u.roles r
+        join Category c on c.specialist = u
+        join CategoryItem ci on ci.category = c
+        where r.name = :roleName
+          and u.visible = true
+          and (:serviceName is null or lower(ci.name) like lower(concat('%', :serviceName, '%')))
+          and (:firstName is null or lower(u.firstName) like lower(concat('%', :firstName, '%')))
+          and (:city is null or lower(u.address.city) like lower(concat('%', :city, '%')))
+          and (:categoryNames is null or c.name in :categoryNames)
+          and (:minExperience is null or u.specialistProfile.experience >= :minExperience)
+          and (:minRating is null or u.specialistProfile.rating >= :minRating)
+            """)
+    List<User> searchSpecialists(
+            @Param("roleName") RoleName roleName,
+            @Param("serviceName") String serviceName,
+            @Param("firstName") String firstName,
+            @Param("city") String city,
+            @Param("categoryNames") List<String> categoryNames,
+            @Param("minExperience") Integer minExperience,
+            @Param("minRating") Double minRating
+    );
+
     @Query("SELECT u FROM User u "
             + "WHERE (:email IS NULL OR u.email = :email) "
             + "AND (:firstName IS NULL OR u.firstName = :firstName) "
@@ -44,4 +68,12 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             @Param("lastName") String lastName,
             @Param("phoneNumber") String phoneNumber
     );
+
+    @Query("""
+    select u from User u
+    join u.roles r
+    where r.name = :roleName
+      and u.visible = true
+            """)
+    List<User> findAllSpecialists(@Param("roleName") RoleName roleName);
 }

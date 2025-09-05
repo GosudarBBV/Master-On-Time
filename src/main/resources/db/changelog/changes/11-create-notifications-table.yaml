@@ -29,7 +29,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: read
+                  name: isRead
                   type: boolean
                   defaultValueBoolean: false
                   constraints:

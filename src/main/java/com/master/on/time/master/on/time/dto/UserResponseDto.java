@@ -1,7 +1,9 @@
 package com.master.on.time.master.on.time.dto;
 
+import com.master.on.time.master.on.time.model.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
+import java.time.LocalDate;
 
 @Schema(description = "Data transfer object representing user details")
 public record UserResponseDto(
@@ -26,6 +28,11 @@ public record UserResponseDto(
 
         @Schema(description = "URL to user's profile image",
                 example = "http://example.com/image.jpg")
-        String profileImageUrl
-) {
+        String profileImageUrl,
+
+        @Schema(description = "User's date of birth", example = "1990-01-01")
+        LocalDate dateOfBirth,
+
+        @Schema(description = "User's gender", example = "MALE")
+        Gender gender) {
 }

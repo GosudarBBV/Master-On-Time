@@ -21,7 +21,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SpecialistProfile {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,4 +43,8 @@ public class SpecialistProfile {
     @Embedded
     @Valid
     private Address address;
+
+    private Integer experience;
+
+    private Double rating;
 }

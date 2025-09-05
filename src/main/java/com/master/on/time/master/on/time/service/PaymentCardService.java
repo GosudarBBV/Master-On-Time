@@ -7,6 +7,8 @@ import java.util.List;
 public interface PaymentCardService {
     PaymentCardResponseDto addCard(PaymentCardRequestDto requestDto);
 
+    PaymentCardResponseDto updateCard(Long cardId, PaymentCardRequestDto requestDto);
+
     List<PaymentCardResponseDto> getUserCards();
 
     void deleteCard(Long cardId);

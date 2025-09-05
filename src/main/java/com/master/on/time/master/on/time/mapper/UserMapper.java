@@ -18,8 +18,8 @@ public interface UserMapper {
         if (user.getAddress() != null) {
             addressDto = new AddressDto(
                     user.getAddress().getCountry(),
-                    user.getAddress().getStreet(),
                     user.getAddress().getCity(),
+                    user.getAddress().getStreet(),
                     user.getAddress().getZip()
             );
         }
@@ -31,7 +31,9 @@ public interface UserMapper {
                 user.getLastName(),
                 addressDto,
                 user.getPhoneNumber(),
-                user.getProfileImageUrl()
+                user.getProfileImage(),
+                user.getDateOfBirth(),
+                user.getGender()
         );
     }
 

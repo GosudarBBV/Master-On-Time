@@ -3,7 +3,6 @@ package com.master.on.time.master.on.time.controller;
 import com.master.on.time.master.on.time.dto.UserResponseDto;
 import com.master.on.time.master.on.time.service.SearchService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,18 +20,19 @@ public class SearchController {
 
     private final SearchService searchService;
 
-    @Operation(summary = "Search specialists",
-            description = "Search for specialists by optional"
-                    + " service type and/or location. Requires authentication.")
+    @Operation(summary = "Search specialists with filters")
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
     public List<UserResponseDto> searchSpecialists(
-            @Parameter(description = "Type of service to search for", example = "Plumbing")
-            @RequestParam(required = false) String serviceType,
-
-            @Parameter(description = "Location to filter specialists", example = "Kyiv")
-            @RequestParam(required = false) String location
+            @RequestParam(required = false) String serviceName,
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) Integer minExperience,
+            @RequestParam(required = false) Double minRating
     ) {
-        return searchService.searchSpecialists(serviceType, location);
+        return searchService.searchSpecialists(serviceName,
+                firstName, city, categories,
+                minExperience, minRating);
     }
 }

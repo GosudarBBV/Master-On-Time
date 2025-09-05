@@ -45,6 +45,16 @@ databaseChangeLog:
               - column:
                   name: country
                   type: varchar(100)
+              - column:
+                  name: experience
+                  type: integer
+                  constraints:
+                    nullable: true
+              - column:
+                  name: rating
+                  type: decimal(3,2)
+                  constraints:
+                    nullable: true
         - addForeignKeyConstraint:
             constraintName: fk_specialist_profiles_user
             baseTableName: specialist_profiles

@@ -15,7 +15,8 @@ public class SearchService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public List<UserResponseDto> searchSpecialists(String serviceName, String location) {
+    public List<UserResponseDto> searchSpecialistsByServiceAndLocation(String serviceName,
+                                                                       String location) {
         if ((serviceName == null || serviceName.isBlank())
                 && (location == null || location.isBlank())) {
             throw new IllegalArgumentException("At least one "
@@ -26,6 +27,38 @@ public class SearchService {
                 RoleName.SPECIALIST,
                 serviceName != null ? serviceName.trim() : null,
                 location != null ? location.trim() : null
+        );
+
+        return providers.stream()
+                .map(userMapper::toResponseDto)
+                .toList();
+    }
+
+    public List<UserResponseDto> searchSpecialists(
+            String serviceName,
+            String firstName,
+            String city,
+            List<String> categories,
+            Integer minExperience,
+            Double minRating
+    ) {
+        if ((serviceName == null || serviceName.isBlank())
+                && (firstName == null || firstName.isBlank())
+                && (city == null || city.isBlank())
+                && (categories == null || categories.isEmpty())
+                && minExperience == null
+                && minRating == null) {
+            throw new IllegalArgumentException("At least one search parameter must be provided");
+        }
+
+        List<User> providers = userRepository.searchSpecialists(
+                RoleName.SPECIALIST,
+                serviceName != null ? serviceName.trim() : null,
+                firstName != null ? firstName.trim() : null,
+                city != null ? city.trim() : null,
+                categories != null && !categories.isEmpty() ? categories : null,
+                minExperience,
+                minRating
         );
 
         return providers.stream()

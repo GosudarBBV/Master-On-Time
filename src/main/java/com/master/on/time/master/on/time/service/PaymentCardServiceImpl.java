@@ -35,6 +35,24 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     }
 
     @Override
+    public PaymentCardResponseDto updateCard(Long cardId, PaymentCardRequestDto requestDto) {
+        Long userId = userService.getAuthenticatedUserId();
+        PaymentCard card = paymentCardRepository.findById(cardId)
+                .orElseThrow(() -> new RuntimeException("Card not found"));
+
+        if (!card.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Access denied");
+        }
+
+        card.setLastFourDigits(requestDto.cardNumber().substring(12));
+        card.setCardType(detectCardType(requestDto.cardNumber()));
+        card.setExpiryDate(requestDto.expiryDate());
+
+        PaymentCard updatedCard = paymentCardRepository.save(card);
+        return paymentCardMapper.toDto(updatedCard);
+    }
+
+    @Override
     public List<PaymentCardResponseDto> getUserCards() {
         Long userId = userService.getAuthenticatedUserId();
         return paymentCardRepository.findAllByUserId(userId)

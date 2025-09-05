@@ -189,7 +189,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .user(findUserById(userId))
                 .message(message)
                 .createdAt(LocalDateTime.now())
-                .read(false)
+                .isRead(false)
                 .build());
     }
 

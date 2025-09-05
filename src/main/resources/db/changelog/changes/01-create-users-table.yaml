@@ -50,6 +50,12 @@ databaseChangeLog:
                   name: phone_number
                   type: varchar(50)
               - column:
+                  name: date_of_birth
+                  type: date
+              - column:
+                  name: gender
+                  type: varchar(10)
+              - column:
                   name: visible
                   type: boolean
                   defaultValueBoolean: true

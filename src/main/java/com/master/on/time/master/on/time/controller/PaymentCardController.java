@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +33,16 @@ public class PaymentCardController {
             @Valid
             PaymentCardRequestDto requestDto) {
         return paymentCardService.addCard(requestDto);
+    }
+
+    @Operation(summary = "Update a payment card of the authenticated user")
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping("/{cardId}")
+    public PaymentCardResponseDto updateCard(
+            @PathVariable Long cardId,
+            @RequestBody @Valid PaymentCardRequestDto requestDto) {
+
+        return paymentCardService.updateCard(cardId, requestDto);
     }
 
     @Operation(summary = "Get all cards of the authenticated user")

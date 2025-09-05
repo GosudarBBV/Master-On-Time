@@ -7,12 +7,14 @@ import com.master.on.time.master.on.time.exception.EntityNotFoundException;
 import com.master.on.time.master.on.time.exception.RegistrationException;
 import com.master.on.time.master.on.time.exception.UserRoleNotAllowedException;
 import com.master.on.time.master.on.time.mapper.UserMapper;
+import com.master.on.time.master.on.time.model.Address;
 import com.master.on.time.master.on.time.model.Role;
 import com.master.on.time.master.on.time.model.RoleName;
 import com.master.on.time.master.on.time.model.User;
 import com.master.on.time.master.on.time.repository.RoleRepository;
 import com.master.on.time.master.on.time.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -71,21 +73,50 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponseDto(user);
     }
 
+    public List<UserResponseDto> getAllSpecialists() {
+        List<User> specialists = userRepository.findAllSpecialists(RoleName.SPECIALIST);
+        return specialists.stream()
+                .map(userMapper::toResponseDto)
+                .toList();
+    }
+
     @Override
-    public UserResponseDto updateUserProfile(Long userId,
-                                             UserProfileUpdateRequestDto dto) {
+    public UserResponseDto updateUserProfile(Long userId, UserProfileUpdateRequestDto dto) {
         User user = findUserById(userId);
 
-        if (!user.getEmail().equals(dto.email())
-                && userRepository.existsByEmail(dto.email())) {
-            throw new RegistrationException("Email already in use: "
-                    + dto.email());
+        if (!user.getEmail().equals(dto.email()) && userRepository.existsByEmail(dto.email())) {
+            throw new RegistrationException("Email already in use: " + dto.email());
         }
 
-        updateUserByRole(user, dto);
+        user.setFirstName(dto.firstName());
+        user.setLastName(dto.lastName());
+        user.setEmail(dto.email());
+        user.setPhoneNumber(dto.phoneNumber());
+        user.setDateOfBirth(dto.dateOfBirth());
+        user.setGender(dto.gender());
+
+        Address address = user.getAddress();
+        if (address == null) {
+            address = new Address();
+            user.setAddress(address);
+        }
+        if (dto.address() != null) {
+            address.setCountry(dto.address().country());
+            address.setCity(dto.address().city());
+            address.setStreet(dto.address().street());
+            address.setZip(dto.address().zip());
+        }
+
+        if (dto.profileImageBase64() != null && !dto.profileImageBase64().isEmpty()) {
+            user.setProfileImage(storeProfileImage(dto.profileImageBase64(), userId));
+        }
 
         User updated = userRepository.save(user);
         return userMapper.toResponseDto(updated);
+    }
+
+    private String storeProfileImage(String base64Image, Long userId) {
+        return "data:image/png;base64," + base64Image;
     }
 
     private RoleName getPrimaryRole(User user) {
