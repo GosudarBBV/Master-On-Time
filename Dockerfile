@@ -20,5 +20,6 @@ COPY --from=builder application/application/ ./
 
 # запуск через JarLauncher (для layered jar)
 ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
+CMD ["--spring.profiles.active=prod"]
 
 EXPOSE 8080
