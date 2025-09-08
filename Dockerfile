@@ -1,18 +1,16 @@
-# Builder stage
+# Builder
 FROM openjdk:17-jdk-alpine as builder
-WORKDIR application
+WORKDIR /app
 COPY master.on.time-0.0.1-SNAPSHOT.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
-# Final stage
+# Final
 FROM openjdk:17-jdk-alpine
-WORKDIR application
-COPY --from=builder application/dependencies/ ./
-COPY --from=builder application/spring-boot-loader/ ./
-COPY --from=builder application/snapshot-dependencies/ ./
-COPY --from=builder application/application/ ./
+WORKDIR /app
+COPY --from=builder /app/dependencies/ ./
+COPY --from=builder /app/spring-boot-loader/ ./
+COPY --from=builder /app/snapshot-dependencies/ ./
+COPY --from=builder /app/application/ ./
 
-# Чекаємо 15 секунд перед запуском, щоб MySQL встиг піднятись
-ENTRYPOINT ["sh", "-c", "sleep 15 && java -jar application.jar"]
-
+ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
 EXPOSE 8080
