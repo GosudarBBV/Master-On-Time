@@ -3,7 +3,7 @@ FROM eclipse-temurin:17-jdk-alpine as builder
 WORKDIR application
 
 # копіюємо готовий jar після збірки (mvn clean package)
-COPY target/master.on.time-0.0.1-SNAPSHOT.jar application.jar
+COPY master.on.time-0.0.1-SNAPSHOT.jar application.jar
 
 # розкладаємо на шари
 RUN java -Djarmode=layertools -jar application.jar extract
