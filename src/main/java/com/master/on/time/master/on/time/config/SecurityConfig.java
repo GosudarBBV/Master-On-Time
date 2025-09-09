@@ -64,7 +64,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.setAllowedOrigins(List.of("http://localhost:5173",
-                "http://enchanting-recreation-production.up.railway.app")); // твій фронтенд
+                "https://enchanting-recreation-production-c650.up.railway.app/")); // твій фронтенд
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
