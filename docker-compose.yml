@@ -4,7 +4,7 @@ services:
   mysqldb:
     image: mysql:8.0
     restart: unless-stopped
-    env_file: ./.env
+    env_file: my-frontend/.env
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -25,7 +25,7 @@ services:
     restart: on-failure
     image: posts-service
     build: .
-    env_file: ./.env
+    env_file: my-frontend/.env
     ports:
       - ${SPRING_LOCAL_PORT}:${SPRING_DOCKER_PORT}
       - ${DEBUG_PORT}:${DEBUG_PORT}
