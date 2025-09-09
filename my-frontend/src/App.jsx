@@ -14,11 +14,11 @@ function App() {
           return res.json();
         })
         .then(data => {
-          setMessage(`API: ${API_BASE_URL}\nПовідомлення: ${data.message}`);
+          setMessage(`API1: ${API_BASE_URL}\nПовідомлення: ${data.message}`);
         })
         .catch(err => {
           console.error(err);
-          setMessage(`API: ${API_BASE_URL}\nError API: ${err.message}`);
+          setMessage(`API1: ${API_BASE_URL}\nError API: ${err.message}`);
         });
     };
 
