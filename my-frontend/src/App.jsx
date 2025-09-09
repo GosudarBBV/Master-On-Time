@@ -8,17 +8,20 @@ function App() {
   const [message, setMessage] = useState("Press button to see message");
 
   const fetchMessage = () => {
-    fetch(`${API_BASE_URL}/random-message`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.json();
-      })
-      .then(data => setMessage(data.message))
-      .catch(err => {
-        console.error(err);
-        setMessage("Error API: " + err.message);
-      });
-  };
+      fetch(`${API_BASE_URL}/random-message`)
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.json();
+        })
+        .then(data => {
+          // додаємо ссилку перед повідомленням
+          setMessage(`Ссылка на API: ${API_BASE_URL} | Повідомлення: ${data.message}`);
+        })
+        .catch(err => {
+          console.error(err);
+          setMessage("Error API: " + err.message);
+        });
+    };
 
   return (
     <div style={{ padding: 20, fontFamily: "sans-serif" }}>
