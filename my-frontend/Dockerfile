@@ -7,6 +7,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run buildф
+RUN npm run build
 CMD ["npx", "serve", "-s", "dist", "-l", "$PORT"]
 EXPOSE $PORT
