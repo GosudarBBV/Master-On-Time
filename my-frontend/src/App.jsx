@@ -7,17 +7,13 @@ import { API_BASE_URL } from "./api";
 function App() {
   const [message, setMessage] = useState("Press button to see message");
 
-  function App() {
-    const [message, setMessage] = useState("Press button to see message");
-
-    const fetchMessage = () => {
+  const fetchMessage = () => {
       fetch(`${API_BASE_URL}/random-message`)
         .then(res => {
           if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
           return res.json();
         })
         .then(data => {
-          // показуємо ссилку + повідомлення
           setMessage(`API: ${API_BASE_URL}\nПовідомлення: ${data.message}`);
         })
         .catch(err => {
