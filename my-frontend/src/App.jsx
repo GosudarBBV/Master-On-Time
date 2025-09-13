@@ -7,9 +7,6 @@ import { API_BASE_URL } from "./api";
 function App() {
   const [message, setMessage] = useState("Press button to see message");
 
-  console.log("API_BASE_URL =", API_BASE_URL);
-  console.log(import.meta.env.VITE_API_URL)
-
   const fetchMessage = () => {
       fetch(`${API_BASE_URL}/random-message`)
         .then(res => {
