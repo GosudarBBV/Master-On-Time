@@ -17,7 +17,7 @@ function App() {
           return res.json();
         })
         .then(data => {
-          setMessage(`API1: ${API_BASE_URL}\nПовідомлення: ${data.message}`);
+          setMessage(`API1: ${API_BASE_URL}\nMassage: ${data.message}`);
         })
         .catch(err => {
           console.error(err);
