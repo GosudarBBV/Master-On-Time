@@ -22,9 +22,9 @@ public class SimpleCorsFilter extends OncePerRequestFilter {
 
         String origin = request.getHeader("Origin");
         if (origin != null && (
-                origin.equals("http://localhost:5173") ||
-                origin.equals("https://master-on-time.netlify.app")
-        )) {
+                origin.equals("http://localhost:5173")
+                        || origin.equals("https://master-on-time.netlify.app")
+            )) {
             response.setHeader("Access-Control-Allow-Origin", origin);
         }
 
