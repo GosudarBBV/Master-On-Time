@@ -68,7 +68,8 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "https://master-on-time.netlify.app"
+                "https://master-on-time.netlify.app",
+                "https://master-on-time-production.up.railway.app"
         ));
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
